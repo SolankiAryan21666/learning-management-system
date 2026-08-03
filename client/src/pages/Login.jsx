@@ -20,6 +20,7 @@ import {
 
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [signupInput, setSignupInput] = useState({
@@ -49,6 +50,8 @@ const Login = () => {
       isSuccess: loginIsSuccess,
     },
   ] = useLoginUserMutation();
+
+  const navigate = useNavigate();
 
   const changeInputHandler = (event, type) => {
     const { name, value } = event.target;
@@ -84,6 +87,7 @@ const Login = () => {
         type: "success",
         title: loginData?.message || "Login successful!",
       });
+      navigate("/");
     }
     if (loginError) {
       toast.add({
@@ -100,6 +104,7 @@ const Login = () => {
     loginError,
     registerIsSuccess,
     loginIsSuccess,
+    navigate,
   ]);
 
   return (
