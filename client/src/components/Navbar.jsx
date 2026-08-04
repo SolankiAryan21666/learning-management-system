@@ -21,13 +21,14 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const user = true;
 
   return (
     <div className="h-16 bg-white border-b border-b-gray-200 fixed top-0 left-0 right-0 z-10">
-      {/* Desktop */}
+      {/* Desktop navigation */}
       <div className="max-w-7xl mx-auto hidden md:flex justify-between items-center h-full gap-10">
         <div className="flex items-center gap-2">
           <School size={30} />
@@ -36,7 +37,7 @@ const Navbar = () => {
           </h1>
         </div>
 
-        {/* User icon */}
+        {/* Authenticated user menu */}
         <div className="flex items-center gap-8">
           {user ? (
             <DropdownMenu>
@@ -61,20 +62,20 @@ const Navbar = () => {
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>My Account</DropdownMenuLabel>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem>My Learning</DropdownMenuItem>
-                  <DropdownMenuItem>Edit Profile</DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/my-learning">My Learning</Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    <Link to="/profile">Edit Profile</Link>
+                  </DropdownMenuItem>
                   <DropdownMenuItem>Log out</DropdownMenuItem>
                 </DropdownMenuGroup>
 
-                {/* {user?.role === "instructor" && (
-                  <> */}
                 <DropdownMenuSeparator />
 
                 <DropdownMenuGroup>
                   <DropdownMenuItem>Dashboard</DropdownMenuItem>
                 </DropdownMenuGroup>
-                {/* </>
-                )} */}
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -86,7 +87,7 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Mobile Device */}
+      {/* Mobile navigation */}
       <div className="flex md:hidden items-center justify-between h-full px-4">
         <h1 className="font-extrabold text-2xl">E-Learning</h1>
         <MobileNavbar />
@@ -123,6 +124,7 @@ const MobileNavbar = () => {
           <span>Edit Profile</span>
           <p className="cursor-pointer">Log out</p>
 
+          {/* Instructor-only navigation */}
           {role === "instructor" && (
             <div className="mt-2">
               <SheetClose
