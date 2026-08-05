@@ -1,16 +1,12 @@
+
 # Dependencies
+node_modules/
 **/node_modules/
 
-# Environment variables
-**/.env
-**/.env.*
+# Environment Variables
+.env
+.env.*
 !.env.example
-
-# Build output
-**/dist/
-**/build/
-**/.next/
-**/coverage/
 
 # Logs
 logs/
@@ -19,15 +15,82 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+lerna-debug.log*
 
-# OS files
+# Build Output
+dist/
+build/
+coverage/
+
+# Vite
+vite.svg
+
+# Cache
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Operating System Files
 .DS_Store
 Thumbs.db
+Desktop.ini
 
-# IDE
-.vscode/
+# IDE / Editor
+.vscode/*
 !.vscode/extensions.json
+!.vscode/settings.json
+
 .idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# Uploads (if storing locally)
+uploads/
+
+# Certificates / Keys
+*.pem
+*.key
+*.crt
+
+# dotenvx
+.env.keys
+.env.vault
+
+# Turborepo
+.turbo/
+
+# VS Code Local History
+.history/
+
+# Temporary Files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Runtime Files
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# Package Managers
+.pnpm-store/
+.npm/
+.yarn/
+.yarn/cache/
+.yarn/unplugged/
+.yarn/build-state.yml
+.yarn/install-state.gz
+
+# Testing
+.nyc_output/
+
+# Local Databases
+*.sqlite
+*.sqlite3
 
 # Misc
-*.local
+*.tgz

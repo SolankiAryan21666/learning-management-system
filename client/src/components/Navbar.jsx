@@ -21,20 +21,49 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./ui/sheet";
-import { Link } from "react-router-dom";
+
+import { Link, useNavigate } from "react-router-dom";
+import { useLogoutUserMutation } from "@/features/api/authApi.js";
+import { useEffect } from "react";
+import { toast } from "./ui/toast.jsx";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
-  const user = true;
+  const { user } = useSelector((store) => store.auth);
+
+  const [logoutUser, { data, isSuccess }] = useLogoutUserMutation();
+  const navigate = useNavigate();
+
+  const logoutHandler = async () => {
+    try {
+      await logoutUser().unwrap();
+    } catch (error) {
+      toast.add({
+        type: "error",
+        title: error?.data?.message ?? "Logout failed",
+      });
+    }
+  };
+
+  useEffect(() => {
+    if (isSuccess) {
+      toast.add({
+        type: "success",
+        title: data?.message ?? "User log out.",
+      });
+      navigate("/login");
+    }
+  }, [data?.message, isSuccess, navigate]);
 
   return (
     <div className="h-16 bg-white border-b border-b-gray-200 fixed top-0 left-0 right-0 z-10">
       {/* Desktop navigation */}
       <div className="max-w-7xl mx-auto hidden md:flex justify-between items-center h-full gap-10">
         <div className="flex items-center gap-2">
-          <School size={30} />
-          <h1 className="hidden md:block font-extrabold text-2xl">
-            E-Learning
-          </h1>
+          <Link to="/" className="flex items-center gap-2">
+            <School size={30} />
+            <h1 className="font-extrabold text-2xl">E-Learning</h1>
+          </Link>
         </div>
 
         {/* Authenticated user menu */}
@@ -49,10 +78,16 @@ const Navbar = () => {
                   >
                     <Avatar>
                       <AvatarImage
-                        src="https://github.com/shadcn.png"
+                        src={user?.photoUrl || "https://github.com/shadcn.png"}
                         alt="@shadcn"
                       />
-                      <AvatarFallback>CN</AvatarFallback>
+                      <AvatarFallback>
+                        {user?.name
+                          ?.split(" ")
+                          .map((word) => word[0])
+                          .join("")
+                          .toUpperCase()}
+                      </AvatarFallback>
                     </Avatar>
                   </Button>
                 }
@@ -68,20 +103,29 @@ const Navbar = () => {
                   <DropdownMenuItem>
                     <Link to="/profile">Edit Profile</Link>
                   </DropdownMenuItem>
-                  <DropdownMenuItem>Log out</DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="cursor-pointer"
+                    onClick={logoutHandler}
+                  >
+                    Log out
+                  </DropdownMenuItem>
                 </DropdownMenuGroup>
 
-                <DropdownMenuSeparator />
-
-                <DropdownMenuGroup>
-                  <DropdownMenuItem>Dashboard</DropdownMenuItem>
-                </DropdownMenuGroup>
+                {/* Only instructor can see dashboard in dropdown menu */}
+                {user?.role === "instructor" && (
+                  <>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Dashboard</DropdownMenuItem>
+                  </>
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
             <div className="flex items-center gap-2">
-              <Button variant="outline">Login</Button>
-              <Button>Signup</Button>
+              <Button variant="outline" onClick={() => navigate("/login")}>
+                Login
+              </Button>
+              <Button onClick={() => navigate("/login")}>Signup</Button>
             </div>
           )}
         </div>

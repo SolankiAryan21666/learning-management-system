@@ -18,24 +18,72 @@ import {
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { toast } from "@/components/ui/toast.jsx";
+
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import Course from "./Course.jsx";
 
-import { useLoadUserQuery } from "@/features/api/authApi.js";
+import {
+  useLoadUserQuery,
+  useUpdateUserMutation,
+} from "@/features/api/authApi.js";
+import LoadingSpinner from "@/components/LoadingSpinner.jsx";
 
 const Profile = () => {
-  const { data, isLoading, isError, error } = useLoadUserQuery();
-  console.log(data);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState("");
+  const [profilePhoto, setProfilePhoto] = useState(null);
+
+  const { data, isLoading } = useLoadUserQuery();
+
+  const [updateUser, { isLoading: updateUserIsLoading }] =
+    useUpdateUserMutation();
+
+  const handleProfilePhotoChange = (event) => {
+    const file = event.target.files?.[0];
+    if (file) setProfilePhoto(file);
+  };
+
+  const updateUserHandler = async (event) => {
+    event.preventDefault();
+
+    const formData = new FormData();
+
+    if (name.trim()) {
+      formData.append("name", name);
+    }
+
+    if (profilePhoto) {
+      formData.append("profilePhoto", profilePhoto);
+    }
+
+    try {
+      const result = await updateUser(formData).unwrap();
+
+      setOpen(false);
+
+      toast.add({
+        type: "success",
+        title: result.message ?? "Profile updated!",
+      });
+    } catch (error) {
+      toast.add({
+        type: "error",
+        title: error?.data?.message ?? "Failed to update profile",
+      });
+    }
+  };
 
   if (isLoading) {
-    return <h1>Loading...</h1>;
+    return <LoadingSpinner />;
   }
 
-  if (isError) {
-    return <h1>{error?.data?.message || "Something went wrong"}</h1>;
-  }
+  const user = data?.user;
 
-  const user = data.user;
+  if (!user) {
+    return <h1>User not found.</h1>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 my-10">
@@ -46,7 +94,7 @@ const Profile = () => {
         <div className="flex flex-col items-center">
           <Avatar className="h-24 w-24 md:h-32 md:w-32 mb-4">
             <AvatarImage
-              src={user.photoUrl || "https://github.com/shadcn.png"}
+              src={user?.photoUrl || "https://github.com/shadcn.png"}
               alt="@shadcn"
             />
             <AvatarFallback>CN</AvatarFallback>
@@ -80,7 +128,7 @@ const Profile = () => {
           </div>
 
           {/* Profile edit dialog */}
-          <Dialog>
+          <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger
               render={<Button className="mt-2">Edit Profile</Button>}
             />
@@ -96,22 +144,38 @@ const Profile = () => {
                 <FieldGroup className="py-4">
                   <Field>
                     <FieldLabel htmlFor="name">Name</FieldLabel>
-                    <Input id="name" type="text" defaultValue={user.name} />
+                    <Input
+                      type="text"
+                      id="name"
+                      value={name}
+                      placeholder="Name"
+                      onChange={(event) => setName(event.target.value)}
+                    />
                   </Field>
 
                   <Field>
                     <FieldLabel htmlFor="profile-image">
                       Profile Photo
                     </FieldLabel>
-                    <Input id="profile-image" type="file" accept="image/*" />
+                    <Input
+                      type="file"
+                      accept="image/*"
+                      id="profile-image"
+                      onChange={handleProfilePhotoChange}
+                    />
                   </Field>
                 </FieldGroup>
+
                 <DialogFooter>
                   <DialogClose
                     render={<Button variant="outline">Cancel</Button>}
                   />
-                  <Button type="submit">
-                    {isLoading ? (
+                  <Button
+                    type="submit"
+                    disabled={updateUserIsLoading}
+                    onClick={updateUserHandler}
+                  >
+                    {updateUserIsLoading ? (
                       <>
                         {/* Display loading feedback while profile update is in progress */}
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />

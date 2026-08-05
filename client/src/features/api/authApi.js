@@ -6,10 +6,14 @@ const USER_API = "http://localhost:8080/api/v1/user/";
 // RTK Query endpoints for authentication and user profile
 export const authApi = createApi({
   reducerPath: "authApi",
+
   baseQuery: fetchBaseQuery({
     baseUrl: USER_API,
     credentials: "include",
   }),
+
+  tagTypes: ["User"],
+
   endpoints: (builder) => ({
     registerUser: builder.mutation({
       query: (inputData) => ({
@@ -17,6 +21,8 @@ export const authApi = createApi({
         method: "POST",
         body: inputData,
       }),
+
+      invalidatesTags: ["User"],
     }),
     loginUser: builder.mutation({
       query: (inputData) => ({
@@ -24,6 +30,9 @@ export const authApi = createApi({
         method: "POST",
         body: inputData,
       }),
+
+      invalidatesTags: ["User"],
+
       async onQueryStarted(_, { queryFulfilled, dispatch }) {
         try {
           const { data } = await queryFulfilled;
@@ -38,10 +47,14 @@ export const authApi = createApi({
         url: "logout",
         method: "GET",
       }),
-      async onQueryStarted(queryFulfilled, { dispatch }) {
+
+      invalidatesTags: ["User"],
+
+      async onQueryStarted(_, { queryFulfilled, dispatch }) {
         try {
           await queryFulfilled;
           dispatch(userLoggedOut());
+          dispatch(authApi.util.resetApiState());
         } catch (error) {
           console.error(error);
         }
@@ -52,6 +65,9 @@ export const authApi = createApi({
         url: "profile",
         method: "GET",
       }),
+
+      providesTags: ["User"],
+
       async onQueryStarted(_, { queryFulfilled, dispatch }) {
         try {
           const { data } = await queryFulfilled;
@@ -61,6 +77,15 @@ export const authApi = createApi({
         }
       },
     }),
+    updateUser: builder.mutation({
+      query: (formData) => ({
+        url: "profile/update",
+        method: "PUT",
+        body: formData,
+      }),
+
+      invalidatesTags: ["User"],
+    }),
   }),
 });
 
@@ -69,4 +94,5 @@ export const {
   useLoginUserMutation,
   useLogoutUserMutation,
   useLoadUserQuery,
+  useUpdateUserMutation,
 } = authApi;
