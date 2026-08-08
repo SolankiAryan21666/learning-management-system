@@ -2,6 +2,7 @@ import RichTextEditor from "@/components/RichTextEditor.jsx";
 import { Button } from "@/components/ui/button.jsx";
 import { Input } from "@/components/ui/input.jsx";
 import { Label } from "@/components/ui/label.jsx";
+import { toast } from "@/components/ui/toast.jsx";
 
 import {
   Card,
@@ -24,10 +25,11 @@ import {
 import { useEffect, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
-import { useEditCourseMutation } from "@/features/api/courseApi.js";
-import { toast } from "@/components/ui/toast.jsx";
+import {
+  useEditCourseMutation,
+  useGetCourseByIdQuery,
+} from "@/features/api/courseApi.js";
 
-// Available course categories displayed in the category selector.
 const categories = [
   { label: "Next JS", value: "Next JS" },
   { label: "Data Science", value: "Data Science" },
@@ -56,13 +58,31 @@ const CourseTab = () => {
 
   const [previewThumbnail, setPreviewThumnail] = useState("");
 
+  const navigate = useNavigate();
+  const params = useParams();
+  const courseId = params.courseId;
+
+  const { data: courseByIdData, isLoading: courseByIdLoading } =
+    useGetCourseByIdQuery(courseId, { refetchOnMountOrArgChange: true });
+
+  useEffect(() => {
+    if (courseByIdData?.course) {
+      const course = courseByIdData.course;
+
+      setInput({
+        courseTitle: course.courseTitle ?? "",
+        subTitle: course.subTitle ?? "",
+        description: course.description ?? "",
+        category: course.category ?? "",
+        courseLevel: course.courseLevel ?? "",
+        coursePrice: course.coursePrice ?? "",
+        courseThumbnail: "",
+      });
+    }
+  }, [courseByIdData?.course]);
+
   const [editCourse, { data, isLoading, isSuccess, error }] =
     useEditCourseMutation();
-
-  const navigate = useNavigate();
-
-  const params = useParams()
-  const courseId = params.courseId;
 
   const changeEventHandler = (event) => {
     const { name, value } = event.target;
@@ -97,23 +117,25 @@ const CourseTab = () => {
     formData.append("coursePrice", input.coursePrice);
     formData.append("courseThumbnail", input.courseThumbnail);
 
-    await editCourse({formData, courseId});
+    await editCourse({ formData, courseId });
   };
 
   useEffect(() => {
-    if(isSuccess) {
+    if (isSuccess) {
       toast.add({
         title: "Success",
-        description: data.message || "Course updated."
-      })
+        description: data.message || "Course updated.",
+      });
     }
-    if(error) {
+    if (error) {
       toast.add({
         title: "Error",
-        description: error.data.message || "Failed to update course."
-      })
+        description: error.data.message || "Failed to update course.",
+      });
     }
-  }, [data, error, isSuccess])
+  }, [data, error, isSuccess]);
+
+  if (courseByIdLoading) return <h1>Loading...</h1>;
 
   const isPublished = false;
 
@@ -162,7 +184,7 @@ const CourseTab = () => {
           <div className="flex items-center gap-5">
             <div className="space-y-2">
               <Label>Category</Label>
-              <Select onValueChange={selectCategory}>
+              <Select value={input.category} onValueChange={selectCategory}>
                 <SelectTrigger className="w-full md:w-64">
                   <SelectValue placeholder="Select a category" />
                 </SelectTrigger>
@@ -181,7 +203,10 @@ const CourseTab = () => {
             </div>
             <div className="space-y-2">
               <Label>Course Level</Label>
-              <Select onValueChange={selectCourseLavel}>
+              <Select
+                value={input.courseLevel}
+                onValueChange={selectCourseLavel}
+              >
                 <SelectTrigger className="w-full md:w-64">
                   <SelectValue placeholder="Select a course level" />
                 </SelectTrigger>
@@ -228,7 +253,6 @@ const CourseTab = () => {
           </div>
           <div className="space-x-2">
             <Button variant="outline" onClick={() => navigate("/admin/course")}>
-              {" "}
               Cancel
             </Button>
             <Button disabled={isLoading} onClick={updateCourseHandler}>

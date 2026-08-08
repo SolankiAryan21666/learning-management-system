@@ -24,7 +24,6 @@ export const createCourse = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       success: false,
       message: "Failed to create course.",
@@ -43,7 +42,6 @@ export const getCreatorCourses = async (req, res) => {
     });
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       success: false,
       message: "Failed to fetch courses.",
@@ -101,13 +99,39 @@ export const editCourse = async (req, res) => {
       course,
       success: true,
       message: "Course updated successfully.",
-    }); 
+    });
   } catch (error) {
     console.error(error);
-
     return res.status(500).json({
       success: false,
-      message: "Failed to fetch courses.",
+      message: "Failed to create course.",
+    });
+  }
+};
+
+export const getCourseById = async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const course = await Course.findById(courseId);
+
+    if (!course) {
+      return res.status(404).json({
+        success: false,
+        message: "Course not found!",
+      });
+    }
+
+    return res.status(200).json({
+      course,
+      success: true,
+      message: "Course found.",
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to get courses by id.",
     });
   }
 };
